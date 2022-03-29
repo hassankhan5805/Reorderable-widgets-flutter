@@ -27,16 +27,11 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  final List<int> _firstListItems =
+   final List<int> _firstListItems =
       List<int>.generate(50, (int index) => index);
-  final List<int> _secondListItems =
+   final List<int> _secondListItems =
       List<int>.generate(50, (int index) => index);
-  // late List<Widget> widgetList = [
-  //   reOrderList(_firstListItems, "0"),
-  //   reOrderList(_secondListItems, "1"),
-  // ];
   late final List<List<int>> _lists = [_firstListItems, _secondListItems];
-  final List<String> keys = ["0", "1"];
   func(int oldIndex, int newIndex, List<int> listItems) {
     setState(() {
       if (oldIndex < newIndex) {
@@ -49,37 +44,30 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        SizedBox(
-          height: 550,
-          child: ReorderableListView(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            onReorder: (int oldIndex, int newIndex) {
-              setState(() {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
-                final List<int> item = _lists.removeAt(oldIndex);
-                _lists.insert(newIndex, item);
-              });
-              // ODO: Coding instruction
-              //       Do all code in this page
-              //       Do not use other plugins
-              //       Code need to be fully customizable
-              // ODO: Make the parent list also reordered
-              // ODO: Make lists item draggable and reordered between the lists (vertical & horizontal)
-              // ODO: Add an item to a particular list without rebuilding the other lists
-              // ODO: Remove an item to a particular list without rebuilding the other lists
-              // ODO: Make it responsive
-            },
-            children: <Widget>[
-              for (int index = 0; index < _lists.length; index += 1)
-                reOrderList(_lists[index], "$index")
-            ],
-          ),
-        ),
-        Row(
+    return SingleChildScrollView(
+      child: 
+        Column(
+          children: 
+            [SizedBox(
+              height: 550,
+              child: ReorderableListView(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                onReorder: (int oldIndex, int newIndex) {
+                  setState(() {
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
+                    final List<int> item = _lists.removeAt(oldIndex);
+                    _lists.insert(newIndex, item);
+                  });
+                },
+                children: <Widget>[
+                  for (int index = 0; index < _lists.length; index += 1)
+                    reOrderList(_lists[index], "$index")
+                ],
+              ),
+            ),
+          Row(
           children: [
             TextButton(
                 onPressed: () {
@@ -117,7 +105,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 child: const Text('Remove item from list 2')),
           ],
         ),
-      ],
+          
+          ],
+        ),
+        
+      
     );
   }
 
@@ -145,7 +137,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                     width: 150,
                     key: Key('$index'),
                     child: ListTile(
-                      tileColor: _secondListItems[index].isOdd
+                      tileColor: listItems[index].isOdd
                           ? oddItemColor
                           : evenItemColor,
                       title: Text('Item ${listItems[index]}'),
