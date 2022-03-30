@@ -1,67 +1,108 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => const MaterialApp(
         home: Drag(),
       );
 }
 
 class Drag extends StatefulWidget {
+  const Drag({Key? key}) : super(key: key);
+
   @override
   _DragState createState() => _DragState();
 }
 
 class _DragState extends State<Drag> {
-  List listA = ["A", "B", "C", "D", "E"];
-  List listB = ["F", "G", "H", "I"];
+  final List<int> _firstListItems = List<int>.generate(3, (int index) => index);
+  final List<int> _secondListItems =
+      List<int>.generate(3, (int index) => index + 3);
   bool flagA = false;
   bool flagB = false;
+  late List<Widget> expand = [expanded1(), expanded2()];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.greenAccent[200],
-      body: SafeArea(
-        child: Column(
-          children: [
-//            list view separated will build a widget between 2 list items to act as a separator
-            Expanded(
-                child: ListView.separated(
-              itemBuilder: _buildListAItems,
-              separatorBuilder: _buildDragTargetsA,
-              itemCount: listA.length,
-            )),
-            Expanded(
-                child: ListView.separated(
-              itemBuilder: _buildListBItems,
-              separatorBuilder: _buildDragTargetsB,
-              itemCount: listB.length,
-            )),
-            // forms(listA, listB)
-          ],
+      body: SizedBox(
+      height: 1000,
+width: 300,
+        child: Expanded(
+          child: ReorderableListView(
+             shrinkWrap: true, padding: EdgeInsets.only(left: 20, right: 20),
+          //  shrinkWrap: true,
+          //  physics: const ClampingScrollPhysics(),
+          //  padding: const EdgeInsets.symmetric(horizontal: 40),
+           onReorder: (int oldIndex, int newIndex) {
+             setState(() {
+               if (oldIndex < newIndex) {
+                 newIndex -= 1;
+               }
+               final Widget item = expand.removeAt(oldIndex);
+               expand.insert(newIndex, item);
+             });
+           },
+           children: <Widget>[
+             for (int index = 0; index < expand.length; index += 1)
+               expand[index],
+           ],
+            ),
         ),
       ),
     );
   }
 
+  
+  Widget expanded1() {
+    return Container(
+          key: Key('123'),
+
+      height: 100,
+      width: 100,
+      child: Expanded(
+          child: ListView.separated(
+            itemBuilder: _buildListAItems,
+            separatorBuilder: _buildDragTargetsA,
+            itemCount: _firstListItems.length,
+          )),
+    );
+  }
+
+  Widget expanded2() {
+    return Container(
+          key: Key('124'),
+
+       height: 100,
+      width: 100,
+      child: Expanded(
+          child: ListView.separated(
+            itemBuilder: _buildListBItems,
+            separatorBuilder: _buildDragTargetsB,
+            itemCount: _secondListItems.length,
+          )),
+    );
+  }
+
 //  builds the widgets for List B items
   Widget _buildListBItems(BuildContext context, int index) {
-    return Draggable<String>(
+    return Draggable<int>(
+      ignoringFeedbackSemantics: false,
+      rootOverlay: true,
+
 //      the value of this draggable is set using data
-      data: listB[index],
+      data: _secondListItems[index],
 //      the widget to show under the users finger being dragged
       feedback: Card(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            listB[index],
-            style: TextStyle(fontSize: 20),
+            _secondListItems[index].toString(),
+            style: const TextStyle(fontSize: 20),
           ),
         ),
       ),
@@ -76,8 +117,8 @@ class _DragState extends State<Drag> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            listB[index],
-            style: TextStyle(fontSize: 20),
+            _secondListItems[index].toString(),
+            style: const TextStyle(fontSize: 20),
           ),
         ),
       ),
@@ -86,14 +127,16 @@ class _DragState extends State<Drag> {
 
 //  builds the widgets for List A items
   Widget _buildListAItems(BuildContext context, int index) {
-    return Draggable<String>(
-      data: listA[index],
+    return Draggable<int>(
+      ignoringFeedbackSemantics: false,
+      rootOverlay: true,
+      data: _firstListItems[index],
       feedback: Card(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            listA[index],
-            style: TextStyle(fontSize: 20),
+            _firstListItems[index].toString(),
+            style: const TextStyle(fontSize: 20),
           ),
         ),
       ),
@@ -106,8 +149,8 @@ class _DragState extends State<Drag> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            listA[index],
-            style: TextStyle(fontSize: 20),
+            _firstListItems[index].toString(),
+            style: const TextStyle(fontSize: 20),
           ),
         ),
       ),
@@ -115,14 +158,14 @@ class _DragState extends State<Drag> {
   }
 
 //  will return a widget used as an indicator for the drop position
-  Widget _buildDropPreview(BuildContext context, String value) {
+  Widget _buildDropPreview(BuildContext context, int value) {
     return Card(
       color: Colors.lightBlue[200],
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          value,
-          style: TextStyle(fontSize: 20),
+          value.toString(),
+          style: const TextStyle(fontSize: 20),
         ),
       ),
     );
@@ -130,41 +173,42 @@ class _DragState extends State<Drag> {
 
 //  builds DragTargets used as separators between list items/widgets for list A
   Widget _buildDragTargetsA(BuildContext context, int index) {
-    return DragTarget<String>(
+    return DragTarget<int>(
 //      builder responsible to build a widget based on whether there is an item being dropped or not
       builder: (context, candidates, rejects) {
-        return candidates.length > 0
+        return candidates.isNotEmpty
             ? _buildDropPreview(context, candidates[0]!)
-            : Container(
+            : const SizedBox(
                 width: 5,
                 height: 5,
               );
       },
 //      condition on to accept the item or not
       onWillAccept: (value) {
-        if (listA.contains(value)) {
+        if (_firstListItems.contains(value)) {
           setState(() {
             flagA = true; //print("list a to a ");
           });
         }
-        if (listB.contains(value)) {
+        if (_secondListItems.contains(value)) {
           setState(() {
             flagA = false; //print("list b to a ");
           });
         }
 
-        return !listB.contains(value) || !listA.contains(value);
+        return !_secondListItems.contains(value) ||
+            !_firstListItems.contains(value);
       },
 //      what to do when an item is accepted
       onAccept: (value) {
         setState(() {
           if (flagA) {
-            print("a to a ");
-            listA.insert(index + 1, value);
-            listA.remove(value);
+            // print("a to a ");
+            _firstListItems.insert(index + 1, value);
+            _firstListItems.remove(value);
           } else {
-            listA.insert(index + 1, value);
-            listB.remove(value);
+            _firstListItems.insert(index + 1, value);
+            _secondListItems.remove(value);
           }
         });
       },
@@ -173,38 +217,39 @@ class _DragState extends State<Drag> {
 
 //  builds drag targets for list B
   Widget _buildDragTargetsB(BuildContext context, int index) {
-    return DragTarget<String>(
+    return DragTarget<int>(
       builder: (context, candidates, rejects) {
-        return candidates.length > 0
+        return candidates.isNotEmpty
             ? _buildDropPreview(context, candidates[0]!)
-            : Container(
+            : const SizedBox(
                 width: 5,
                 height: 5,
               );
       },
       onWillAccept: (value) {
-        if (listA.contains(value)) {
+        if (_firstListItems.contains(value)) {
           setState(() {
             flagB = true; //print("list a to b ");
           });
         }
-        if (listB.contains(value)) {
+        if (_secondListItems.contains(value)) {
           setState(() {
             flagB = false; //print("list b to b ");
           });
         }
 
-        return !listB.contains(value) || !listA.contains(value);
+        return !_secondListItems.contains(value) ||
+            !_firstListItems.contains(value);
       },
       onAccept: (value) {
         setState(() {
           if (flagB) {
-            print("a to b");
-            listB.insert(index + 1, value);
-            listA.remove(value);
+            // print("a to b");
+            _secondListItems.insert(index + 1, value);
+            _firstListItems.remove(value);
           } else {
-            listB.insert(index + 1, value);
-            listB.remove(value);
+            _secondListItems.insert(index + 1, value);
+            _secondListItems.remove(value);
           }
         });
       },
