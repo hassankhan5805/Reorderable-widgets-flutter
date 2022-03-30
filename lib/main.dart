@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => const MaterialApp(
+  Widget build(BuildContext context) => MaterialApp(
         home: Drag(),
       );
 }
 
 class Drag extends StatefulWidget {
-  const Drag({Key? key}) : super(key: key);
 
   @override
   _DragState createState() => _DragState();
@@ -29,62 +28,59 @@ class _DragState extends State<Drag> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.greenAccent[200],
-      body: SizedBox(
-      height: 1000,
-width: 300,
-        child: Expanded(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          height: 200,
+          width: 300,
           child: ReorderableListView(
-             shrinkWrap: true, padding: EdgeInsets.only(left: 20, right: 20),
-          //  shrinkWrap: true,
-          //  physics: const ClampingScrollPhysics(),
-          //  padding: const EdgeInsets.symmetric(horizontal: 40),
-           onReorder: (int oldIndex, int newIndex) {
-             setState(() {
-               if (oldIndex < newIndex) {
-                 newIndex -= 1;
-               }
-               final Widget item = expand.removeAt(oldIndex);
-               expand.insert(newIndex, item);
-             });
-           },
-           children: <Widget>[
-             for (int index = 0; index < expand.length; index += 1)
-               expand[index],
-           ],
-            ),
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true, padding: EdgeInsets.only(left: 20, right: 20),
+            //  shrinkWrap: true,
+            //  physics: const ClampingScrollPhysics(),
+            //  padding: const EdgeInsets.symmetric(horizontal: 40),
+            onReorder: (int oldIndex, int newIndex) {
+              setState(() {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final Widget item = expand.removeAt(oldIndex);
+                expand.insert(newIndex, item);
+              });
+            },
+            children: <Widget>[
+              for (int index = 0; index < expand.length; index += 1)
+                expand[index],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  
   Widget expanded1() {
     return Container(
-          key: Key('123'),
-
+      key: Key('123'),
       height: 100,
       width: 100,
-      child: Expanded(
-          child: ListView.separated(
-            itemBuilder: _buildListAItems,
-            separatorBuilder: _buildDragTargetsA,
-            itemCount: _firstListItems.length,
-          )),
+      child: ListView.separated(
+        itemBuilder: _buildListAItems,
+        separatorBuilder: _buildDragTargetsA,
+        itemCount: _firstListItems.length,
+      ),
     );
   }
 
   Widget expanded2() {
     return Container(
-          key: Key('124'),
-
-       height: 100,
+      key: Key('124'),
+      height: 100,
       width: 100,
-      child: Expanded(
-          child: ListView.separated(
-            itemBuilder: _buildListBItems,
-            separatorBuilder: _buildDragTargetsB,
-            itemCount: _secondListItems.length,
-          )),
+      child: ListView.separated(
+        itemBuilder: _buildListBItems,
+        separatorBuilder: _buildDragTargetsB,
+        itemCount: _secondListItems.length,
+      ),
     );
   }
 
