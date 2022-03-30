@@ -30,7 +30,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   TextEditingController newValue = TextEditingController();
   TextEditingController indexController = TextEditingController();
   TextEditingController deleteIndex = TextEditingController();
-  
+
   bool flagA = false;
   bool flagB = false;
   List _firstListItems = ["1", "2", "3"];
@@ -105,8 +105,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   Widget _buildListBItems(BuildContext context, int index) {
-    
-    
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
@@ -147,7 +145,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
 //  builds the widgets for List A items
-  Widget _buildListAItems(BuildContext context, int index) {  
+  Widget _buildListAItems(BuildContext context, int index) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
@@ -576,18 +574,26 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   } else {
                     setState(() {
                       if (dropdownvalue2 == "List 2") {
-                        _secondListItems.remove((deleteIndex.text));
+                        print(int.parse(deleteIndex.text));
+                        setState(() {
+                          _secondListItems
+                              .removeAt(int.parse(deleteIndex.text));
+                        });
 
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
-                          content: Text("Item removed to list 2"),
+                          content: Text("Item removed from list 2"),
                           backgroundColor: Colors.blue,
                         ));
                       } else if (dropdownvalue2.contains("List 1")) {
-                        _firstListItems.remove((deleteIndex.text));
+                        print(int.parse(deleteIndex.text));
+                        setState(() {
+                          _firstListItems.removeAt(int.parse(deleteIndex.text));
+                          
+                        });
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
-                          content: Text("Item removed to list 1"),
+                          content: Text("Item removed from list 1"),
                           backgroundColor: Colors.blue,
                         ));
                       }
