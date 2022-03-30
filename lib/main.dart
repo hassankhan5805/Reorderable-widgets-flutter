@@ -30,6 +30,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   TextEditingController newValue = TextEditingController();
   TextEditingController indexController = TextEditingController();
   TextEditingController deleteIndex = TextEditingController();
+  
   bool flagA = false;
   bool flagB = false;
   List _firstListItems = ["1", "2", "3"];
@@ -64,11 +65,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       child: Column(
         children: [
           SizedBox(
-            height: 550,
+            height: 350,
             child: ReorderableListView(
               shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              physics: NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 40),
               onReorder: (int oldIndex, int newIndex) {
                 setState(() {
                   List a = _firstListItems;
@@ -104,13 +105,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   Widget _buildListBItems(BuildContext context, int index) {
+    
+    
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
+    final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
     return Draggable<String>(
 //      the value of this draggable is set using data
       data: _secondListItems[index],
 //      the widget to show under the users finger being dragged
-      feedback: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+      feedback: Container(
+        color: index.isEven ? evenItemColor : oddItemColor,
+        height: 80,
+        width: 80,
+        child: Center(
           child: Text(
             _secondListItems[index].toString(),
             style: TextStyle(fontSize: 20),
@@ -120,13 +128,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 //      what to display in the child's position when being dragged
       childWhenDragging: Container(
         color: Colors.grey,
-        width: 40,
-        height: 40,
+        width: 80,
+        height: 80,
       ),
 //      widget in idle state
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+      child: Container(
+        color: index.isEven ? evenItemColor : oddItemColor,
+        height: 80,
+        width: 80,
+        child: Center(
           child: Text(
             _secondListItems[index].toString(),
             style: TextStyle(fontSize: 20),
@@ -137,12 +147,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
 //  builds the widgets for List A items
-  Widget _buildListAItems(BuildContext context, int index) {
+  Widget _buildListAItems(BuildContext context, int index) {  
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
+    final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
     return Draggable<String>(
       data: _firstListItems[index],
-      feedback: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+      feedback: Container(
+        color: index.isEven ? evenItemColor : oddItemColor,
+        width: 80,
+        height: 80,
+        child: Center(
           child: Text(
             _firstListItems[index].toString(),
             style: TextStyle(fontSize: 20),
@@ -151,12 +166,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ),
       childWhenDragging: Container(
         color: Colors.grey,
-        width: 40,
-        height: 40,
+        width: 80,
+        height: 80,
       ),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+      child: Container(
+        color: index.isEven ? evenItemColor : oddItemColor,
+        width: 80,
+        height: 80,
+        child: Center(
           child: Text(
             _firstListItems[index].toString(),
             style: TextStyle(fontSize: 20),
@@ -168,10 +185,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
 //  will return a widget used as an indicator for the drop position
   Widget _buildDropPreview(BuildContext context, String value) {
-    return Card(
+    return Container(
+      height: 80,
+      width: 80,
       color: Colors.lightBlue[200],
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
+      child: Center(
         child: Text(
           value,
           style: TextStyle(fontSize: 20),
@@ -277,29 +295,26 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   Widget reOrderList(final List listItems, String keys, _buildListItems,
       _buildDragTargets, len) {
-    // final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    // final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
-    // final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
     return SizedBox(
       key: Key(keys),
-      height: 250,
+      height: 200,
       child: Column(
         children: [
           Container(
             height: 20,
             color: Colors.red,
           ),
-          SizedBox(
-            height: 200,
-            width: 500,
+          Expanded(
             child: ReorderableListView(
+              scrollDirection: Axis.horizontal,
               shrinkWrap: true,
-              padding: const EdgeInsets.symmetric(vertical: 40),
+              padding: EdgeInsets.symmetric(vertical: 40),
               children: <Widget>[
                 SizedBox(
-                  height: 200,
+                  width: MediaQuery.of(context).size.width,
                   key: Key("$keys"),
                   child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
                     itemBuilder: _buildListItems,
                     separatorBuilder: _buildDragTargets,
                     itemCount: len,
@@ -434,8 +449,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   } else {
                     setState(() {
                       if (dropdownvalue == "List 2") {
-                        _secondListItems.insert(int.parse(indexController.text),
-                            (newValue.text));
+                        _secondListItems.insert(
+                            int.parse(indexController.text), (newValue.text));
 
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
@@ -443,8 +458,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           backgroundColor: Colors.blue,
                         ));
                       } else if (dropdownvalue.contains("List 1")) {
-                        _firstListItems.insert(int.parse(indexController.text),
-                            (newValue.text));
+                        _firstListItems.insert(
+                            int.parse(indexController.text), (newValue.text));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text("Item added to list 1"),
