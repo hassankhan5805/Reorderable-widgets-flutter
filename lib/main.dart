@@ -567,14 +567,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             height: 200,
             width: 500,
             child: ReorderableListView(
-              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
               padding: const EdgeInsets.symmetric(vertical: 40),
               children: <Widget>[
-                ListView.separated(
+                SizedBox(
+                  height: 200,
                   key: Key("$keys"),
-                  itemBuilder: _buildListBItems,
-                  separatorBuilder: _buildDragTargetsB,
-                  itemCount: len,
+                  child: ListView.separated(
+                    itemBuilder: _buildListBItems,
+                    separatorBuilder: _buildDragTargetsB,
+                    itemCount: len,
+                  ),
                 )
               ],
               onReorder: (int oldIndex, int newIndex) {
