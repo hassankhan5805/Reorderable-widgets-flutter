@@ -33,9 +33,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   bool flagA = false;
   bool flagB = false;
-  List _firstListItems = ["1", "2", "3"];
-  // List<int>.generate(50, (int index) => index);
-  List _secondListItems = ["4", "5", "6"];
+  List _firstListItems = List<String>.generate(50, (int index) => "$index");
+  List _secondListItems =
+      List<String>.generate(50, (int index) => "${index }");
   // List<int>.generate(50, (int index) => index);
   late final List _lists = [_firstListItems, _secondListItems];
   func(int oldIndex, int newIndex, List listItems) {
@@ -210,10 +210,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       },
 //      condition on to accept the item or not
       onWillAccept: (value) {
+        print("value $value");
         if (_firstListItems.contains(value)) {
           setState(() {
-            print("a to a ");
-
             flagA = true; //print("list a to a ");
           });
         }
@@ -225,18 +224,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           });
         }
 
-        return !_secondListItems.contains(value) ||
-            !_firstListItems.contains(value);
+        return true;
       },
 //      what to do when an item is accepted
       onAccept: (value) {
         setState(() {
           if (flagA) {
-            print("a to a ");
-            _firstListItems.insert(index + 1, value);
             _firstListItems.remove(value);
+            print("b to b");
+            _firstListItems.insert(index + 1, value);
           } else {
-            print("a to a ");
+            print("a to b");
 
             _firstListItems.insert(index + 1, value);
             _secondListItems.remove(value);
@@ -260,8 +258,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onWillAccept: (value) {
         if (_firstListItems.contains(value)) {
           setState(() {
-            print("a to b");
-
             flagB = true; //print("list a to b ");
           });
         }
@@ -271,20 +267,21 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           });
         }
 
-        return !_secondListItems.contains(value) ||
-            !_firstListItems.contains(value);
+        return true;
       },
       onAccept: (value) {
         setState(() {
           if (flagB) {
-            print("a to b");
+            // print("a to b");
+            print("b to a");
+
             _secondListItems.insert(index + 1, value);
             _firstListItems.remove(value);
           } else {
-            print("a to b");
+            _secondListItems.remove(value);
+            print("a to a ");
 
             _secondListItems.insert(index + 1, value);
-            _secondListItems.remove(value);
           }
         });
       },
@@ -309,7 +306,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               padding: EdgeInsets.symmetric(vertical: 40),
               children: <Widget>[
                 SizedBox(
-                  width: MediaQuery.of(context).size.width,
+                  width: listItems.length * 85,
                   key: Key("$keys"),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
@@ -589,7 +586,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                         print(int.parse(deleteIndex.text));
                         setState(() {
                           _firstListItems.removeAt(int.parse(deleteIndex.text));
-                          
                         });
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
