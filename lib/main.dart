@@ -34,9 +34,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   bool flagA = false;
   bool flagB = false;
   List _firstListItems = List<String>.generate(50, (int index) => "$index");
-  List _secondListItems =
-      List<String>.generate(50, (int index) => "${index }");
-  // List<int>.generate(50, (int index) => index);
+  List _secondListItems = List<String>.generate(50, (int index) => "${index}");
   late final List _lists = [_firstListItems, _secondListItems];
   func(int oldIndex, int newIndex, List listItems) {
     setState(() {
@@ -75,14 +73,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   List a = _firstListItems;
                   _firstListItems = _secondListItems;
                   _secondListItems = a;
-                  // print("old $oldIndex,$newIndex");
-
-                  // if (oldIndex < newIndex) {
-                  //   newIndex -= 1;
-                  // }
-                  // print("new $oldIndex,$newIndex");
-                  // final List item = _lists.removeAt(oldIndex);
-                  // _lists.insert(newIndex, item);
                 });
               },
               children: <Widget>[
@@ -109,9 +99,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
     return Draggable<String>(
-//      the value of this draggable is set using data
       data: _secondListItems[index],
-//      the widget to show under the users finger being dragged
       feedback: Container(
         color: index.isEven ? evenItemColor : oddItemColor,
         height: 80,
@@ -123,13 +111,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           ),
         ),
       ),
-//      what to display in the child's position when being dragged
       childWhenDragging: Container(
         color: Colors.grey,
         width: 80,
         height: 80,
       ),
-//      widget in idle state
       child: Container(
         color: index.isEven ? evenItemColor : oddItemColor,
         height: 80,
@@ -144,7 +130,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-//  builds the widgets for List A items
   Widget _buildListAItems(BuildContext context, int index) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
@@ -181,7 +166,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-//  will return a widget used as an indicator for the drop position
   Widget _buildDropPreview(BuildContext context, String value) {
     return Container(
       height: 80,
@@ -196,10 +180,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-//  builds DragTargets used as separators between list items/widgets for list A
   Widget _buildDragTargetsA(BuildContext context, int index) {
     return DragTarget<String>(
-//      builder responsible to build a widget based on whether there is an item being dropped or not
       builder: (context, candidates, rejects) {
         return candidates.length > 0
             ? _buildDropPreview(context, candidates[0]!)
@@ -208,34 +190,26 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 height: 5,
               );
       },
-//      condition on to accept the item or not
       onWillAccept: (value) {
-        print("value $value");
         if (_firstListItems.contains(value)) {
           setState(() {
-            flagA = true; //print("list a to a ");
+            flagA = true;
           });
         }
         if (_secondListItems.contains(value)) {
           setState(() {
-            print("a to a ");
-
-            flagA = false; //print("list b to a ");
+            flagA = false;
           });
         }
 
         return true;
       },
-//      what to do when an item is accepted
       onAccept: (value) {
         setState(() {
           if (flagA) {
             _firstListItems.remove(value);
-            print("b to b");
             _firstListItems.insert(index + 1, value);
           } else {
-            print("a to b");
-
             _firstListItems.insert(index + 1, value);
             _secondListItems.remove(value);
           }
@@ -244,7 +218,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-//  builds drag targets for list B
   Widget _buildDragTargetsB(BuildContext context, int index) {
     return DragTarget<String>(
       builder: (context, candidates, rejects) {
@@ -258,12 +231,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onWillAccept: (value) {
         if (_firstListItems.contains(value)) {
           setState(() {
-            flagB = true; //print("list a to b ");
+            flagB = true;
           });
         }
         if (_secondListItems.contains(value)) {
           setState(() {
-            flagB = false; //print("list b to b ");
+            flagB = false;
           });
         }
 
@@ -272,15 +245,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onAccept: (value) {
         setState(() {
           if (flagB) {
-            // print("a to b");
-            print("b to a");
-
             _secondListItems.insert(index + 1, value);
             _firstListItems.remove(value);
           } else {
             _secondListItems.remove(value);
-            print("a to a ");
-
             _secondListItems.insert(index + 1, value);
           }
         });
