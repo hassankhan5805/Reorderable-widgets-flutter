@@ -33,8 +33,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   bool flagA = false;
   bool flagB = false;
-  List _firstListItems = List<String>.generate(50, (int index) => "$index");
-  List _secondListItems = List<String>.generate(50, (int index) => "${index}");
+  int uniqueIdentifier = 50; //must not be less then list size
+  List<String> _firstListItems =
+      List<String>.generate(50, (int index) => "$index");
+  late List<String> _secondListItems =
+      List<String>.generate(50, (int index) => "${index + uniqueIdentifier}");
   late final List _lists = [_firstListItems, _secondListItems];
   func(int oldIndex, int newIndex, List listItems) {
     setState(() {
@@ -56,7 +59,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   String? err;
-
+  bool swaped = false;
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -70,9 +73,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               padding: EdgeInsets.symmetric(horizontal: 40),
               onReorder: (int oldIndex, int newIndex) {
                 setState(() {
-                  List a = _firstListItems;
+                  List<String> a = _firstListItems;
                   _firstListItems = _secondListItems;
                   _secondListItems = a;
+                  swaped = !swaped;
                 });
               },
               children: <Widget>[
@@ -88,7 +92,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               ],
             ),
           ),
-          forms(),
+          forms(swaped ? _firstListItems : _secondListItems,
+              swaped ? _secondListItems : _firstListItems),
         ],
       ),
     );
@@ -98,7 +103,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
-    return Draggable<String>(
+    return LongPressDraggable<String>(
       data: _secondListItems[index],
       feedback: Container(
         color: index.isEven ? evenItemColor : oddItemColor,
@@ -106,7 +111,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         width: 80,
         child: Center(
           child: Text(
-            _secondListItems[index].toString(),
+            int.parse(_secondListItems[index]) > (uniqueIdentifier - 1)
+                ? "${int.parse(_secondListItems[index]) - uniqueIdentifier}"
+                : "${int.parse(_secondListItems[index])}",
             style: TextStyle(fontSize: 20),
           ),
         ),
@@ -122,7 +129,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         width: 80,
         child: Center(
           child: Text(
-            _secondListItems[index].toString(),
+            int.parse(_secondListItems[index]) > (uniqueIdentifier - 1)
+                ? "${int.parse(_secondListItems[index]) - uniqueIdentifier}"
+                : "${int.parse(_secondListItems[index])}",
             style: TextStyle(fontSize: 20),
           ),
         ),
@@ -134,7 +143,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
-    return Draggable<String>(
+    return LongPressDraggable<String>(
       data: _firstListItems[index],
       feedback: Container(
         color: index.isEven ? evenItemColor : oddItemColor,
@@ -142,7 +151,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         height: 80,
         child: Center(
           child: Text(
-            _firstListItems[index].toString(),
+            int.parse(_firstListItems[index]) > uniqueIdentifier - 1
+                ? "${int.parse(_firstListItems[index]) - uniqueIdentifier}"
+                : "${int.parse(_firstListItems[index])}",
             style: TextStyle(fontSize: 20),
           ),
         ),
@@ -158,7 +169,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         height: 80,
         child: Center(
           child: Text(
-            _firstListItems[index].toString(),
+            int.parse(_firstListItems[index]) > uniqueIdentifier - 1
+                ? "${int.parse(_firstListItems[index]) - uniqueIdentifier}"
+                : "${int.parse(_firstListItems[index])}",
             style: TextStyle(fontSize: 20),
           ),
         ),
@@ -173,7 +186,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       color: Colors.lightBlue[200],
       child: Center(
         child: Text(
-          value,
+          int.parse(value) > 59
+              ? "${int.parse(value) - uniqueIdentifier}"
+              : "${int.parse(value)}",
           style: TextStyle(fontSize: 20),
         ),
       ),
@@ -193,12 +208,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onWillAccept: (value) {
         if (_firstListItems.contains(value)) {
           setState(() {
-            flagA = true;
+            print("a to a");
+            flagA = false;
           });
         }
         if (_secondListItems.contains(value)) {
           setState(() {
-            flagA = false;
+            print("b to a");
+            flagA = true;
           });
         }
 
@@ -207,12 +224,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onAccept: (value) {
         setState(() {
           if (flagA) {
-            _firstListItems.remove(value);
-            _firstListItems.insert(index + 1, value);
-          } else {
-            _firstListItems.insert(index + 1, value);
+            print(1);
             _secondListItems.remove(value);
+          } else {
+            print(2);
+            _firstListItems.remove(value);
           }
+          _firstListItems.insert(index + 1, value);
         });
       },
     );
@@ -231,11 +249,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onWillAccept: (value) {
         if (_firstListItems.contains(value)) {
           setState(() {
+            print("a to b");
             flagB = true;
           });
         }
         if (_secondListItems.contains(value)) {
           setState(() {
+            print("b to b");
             flagB = false;
           });
         }
@@ -245,12 +265,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onAccept: (value) {
         setState(() {
           if (flagB) {
-            _secondListItems.insert(index + 1, value);
+            print(3);
             _firstListItems.remove(value);
           } else {
+            print(4);
             _secondListItems.remove(value);
-            _secondListItems.insert(index + 1, value);
           }
+          _secondListItems.insert(index + 1, value);
         });
       },
     );
@@ -269,6 +290,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           ),
           Expanded(
             child: ReorderableListView(
+              buildDefaultDragHandles: false,
               scrollDirection: Axis.horizontal,
               shrinkWrap: true,
               padding: EdgeInsets.symmetric(vertical: 40),
@@ -294,7 +316,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-  Widget forms() {
+  Widget forms(_firstList, _secondList) {
     return Column(children: [
       Form(
         key: _formKey,
@@ -320,9 +342,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 validator: (value) {
                   int listLength;
                   if (dropdownvalue == "List 1") {
-                    listLength = _firstListItems.length;
+                    listLength = _firstList.length;
                   } else {
-                    listLength = _secondListItems.length;
+                    listLength = _secondList.length;
                   }
                   if (value!.isEmpty) {
                     return 'This is required field';
@@ -412,17 +434,37 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   } else {
                     setState(() {
                       if (dropdownvalue == "List 2") {
-                        _secondListItems.insert(
-                            int.parse(indexController.text), (newValue.text));
+                        print("inseted in list 2");
+
+                        if (int.parse(newValue.text) < uniqueIdentifier) {
+                          _secondList.insert(
+                              int.parse(indexController.text), (newValue.text));
+                        } else {
+                          _secondList.insert(
+                              int.parse(indexController.text),
+                              (int.parse(newValue.text) + uniqueIdentifier)
+                                  .toString()
+                                  .trim());
+                        }
 
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text("Item Added to list 2"),
                           backgroundColor: Colors.blue,
                         ));
-                      } else if (dropdownvalue.contains("List 1")) {
-                        _firstListItems.insert(
-                            int.parse(indexController.text), (newValue.text));
+                      } else if (dropdownvalue == "List 1") {
+                        print("inseted in list 1");
+                        if (int.parse(newValue.text) < uniqueIdentifier) {
+                          _firstList.insert(
+                              int.parse(indexController.text), (newValue.text));
+                        } else {
+                          _firstList.insert(
+                              int.parse(indexController.text),
+                              (int.parse(newValue.text) + uniqueIdentifier)
+                                  .toString()
+                                  .trim());
+                        }
+
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text("Item added to list 1"),
@@ -481,9 +523,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 validator: (value) {
                   int listLength;
                   if (dropdownvalue2 == "List 1") {
-                    listLength = _firstListItems.length;
+                    listLength = _firstList.length;
                   } else {
-                    listLength = _secondListItems.length;
+                    listLength = _secondList.length;
                   }
                   if (value!.isEmpty) {
                     return 'This is required field';
@@ -541,8 +583,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       if (dropdownvalue2 == "List 2") {
                         print(int.parse(deleteIndex.text));
                         setState(() {
-                          _secondListItems
-                              .removeAt(int.parse(deleteIndex.text));
+                          _secondList.removeAt(int.parse(deleteIndex.text));
                         });
 
                         ScaffoldMessenger.of(context)
@@ -553,7 +594,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       } else if (dropdownvalue2.contains("List 1")) {
                         print(int.parse(deleteIndex.text));
                         setState(() {
-                          _firstListItems.removeAt(int.parse(deleteIndex.text));
+                          _firstList.removeAt(int.parse(deleteIndex.text));
                         });
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
@@ -592,3 +633,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     ]);
   }
 }
+// isAlwaysShown: true,
+//                     trackVisibility: true,
+//                     showTrackOnHover: true,
+//                     hoverThickness: 30,
+//                     thickness: 30,
+//                     interactive: true,
