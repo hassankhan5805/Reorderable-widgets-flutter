@@ -33,12 +33,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   bool flagA = false;
   bool flagB = false;
-  int uniqueIdentifier = 50; //must not be less then list size
   List<String> _firstListItems =
       List<String>.generate(50, (int index) => "$index");
   late List<String> _secondListItems =
-      List<String>.generate(50, (int index) => "${index + uniqueIdentifier}");
+      List<String>.generate(50, (int index) => "${index}");
   late final List _lists = [_firstListItems, _secondListItems];
+  late int uniqueIdentifier =
+      _secondListItems.length; //must not be less then list size
+  @override
+  void initState() {
+    super.initState();
+    _secondListItems =
+        List<String>.generate(50, (int index) => "${index + uniqueIdentifier}");
+  }
+
   func(int oldIndex, int newIndex, List listItems) {
     setState(() {
       if (oldIndex < newIndex) {
@@ -59,6 +67,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   String? err;
+  ScrollController scrollController1 = ScrollController();
+  ScrollController scrollController2 = ScrollController();
+
   bool swaped = false;
   @override
   Widget build(BuildContext context) {
@@ -68,9 +79,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           SizedBox(
             height: 350,
             child: ReorderableListView(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 40),
+              //shrinkWrap: true,
+              //physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               onReorder: (int oldIndex, int newIndex) {
                 setState(() {
                   List<String> a = _firstListItems;
@@ -88,7 +99,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       index == 1 ? _buildDragTargetsA : _buildDragTargetsB,
                       index == 1
                           ? _firstListItems.length
-                          : _secondListItems.length)
+                          : _secondListItems.length,
+                          index == 1 ? scrollController1:scrollController2)
+
               ],
             ),
           ),
@@ -103,36 +116,45 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
-    return LongPressDraggable<String>(
-      data: _secondListItems[index],
-      feedback: Container(
-        color: index.isEven ? evenItemColor : oddItemColor,
-        height: 80,
-        width: 80,
-        child: Center(
-          child: Text(
-            int.parse(_secondListItems[index]) > (uniqueIdentifier - 1)
-                ? "${int.parse(_secondListItems[index]) - uniqueIdentifier}"
-                : "${int.parse(_secondListItems[index])}",
-            style: TextStyle(fontSize: 20),
+    return Listener(
+      onPointerMove: (PointerMoveEvent event) {
+      
+        if (event.position.dx > MediaQuery.of(context).size.width - 100) {
+          scrollController2.animateTo(scrollController2.offset + 200,
+              curve: Curves.ease, duration: const Duration(milliseconds: 400));
+        }
+      },
+      child: LongPressDraggable<String>(
+        data: _secondListItems[index],
+        feedback: Container(
+          color: index.isEven ? evenItemColor : oddItemColor,
+          height: 80,
+          width: 80,
+          child: Center(
+            child: Text(
+              int.parse(_secondListItems[index]) > (uniqueIdentifier - 1)
+                  ? "${int.parse(_secondListItems[index]) - uniqueIdentifier}"
+                  : "${int.parse(_secondListItems[index])}",
+              style: TextStyle(fontSize: 20),
+            ),
           ),
         ),
-      ),
-      childWhenDragging: Container(
-        color: Colors.grey,
-        width: 80,
-        height: 80,
-      ),
-      child: Container(
-        color: index.isEven ? evenItemColor : oddItemColor,
-        height: 80,
-        width: 80,
-        child: Center(
-          child: Text(
-            int.parse(_secondListItems[index]) > (uniqueIdentifier - 1)
-                ? "${int.parse(_secondListItems[index]) - uniqueIdentifier}"
-                : "${int.parse(_secondListItems[index])}",
-            style: TextStyle(fontSize: 20),
+        childWhenDragging: Container(
+          color: Colors.grey,
+          width: 80,
+          height: 80,
+        ),
+        child: Container(
+          color: index.isEven ? evenItemColor : oddItemColor,
+          height: 80,
+          width: 80,
+          child: Center(
+            child: Text(
+              int.parse(_secondListItems[index]) > (uniqueIdentifier - 1)
+                  ? "${int.parse(_secondListItems[index]) - uniqueIdentifier}"
+                  : "${int.parse(_secondListItems[index])}",
+              style: TextStyle(fontSize: 20),
+            ),
           ),
         ),
       ),
@@ -143,36 +165,45 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color oddItemColor = colorScheme.primary.withOpacity(0.05);
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
-    return LongPressDraggable<String>(
-      data: _firstListItems[index],
-      feedback: Container(
-        color: index.isEven ? evenItemColor : oddItemColor,
-        width: 80,
-        height: 80,
-        child: Center(
-          child: Text(
-            int.parse(_firstListItems[index]) > uniqueIdentifier - 1
-                ? "${int.parse(_firstListItems[index]) - uniqueIdentifier}"
-                : "${int.parse(_firstListItems[index])}",
-            style: TextStyle(fontSize: 20),
+    return Listener(
+      onPointerMove: (PointerMoveEvent event) {
+      
+        if (event.position.dx > MediaQuery.of(context).size.width - 100) {
+          scrollController1.animateTo(scrollController1.offset + 200,
+              curve: Curves.ease, duration: const Duration(milliseconds: 400));
+        }
+      },
+      child: LongPressDraggable<String>(
+        data: _firstListItems[index],
+        feedback: Container(
+          color: index.isEven ? evenItemColor : oddItemColor,
+          width: 80,
+          height: 80,
+          child: Center(
+            child: Text(
+              int.parse(_firstListItems[index]) > uniqueIdentifier - 1
+                  ? "${int.parse(_firstListItems[index]) - uniqueIdentifier}"
+                  : "${int.parse(_firstListItems[index])}",
+              style: TextStyle(fontSize: 20),
+            ),
           ),
         ),
-      ),
-      childWhenDragging: Container(
-        color: Colors.grey,
-        width: 80,
-        height: 80,
-      ),
-      child: Container(
-        color: index.isEven ? evenItemColor : oddItemColor,
-        width: 80,
-        height: 80,
-        child: Center(
-          child: Text(
-            int.parse(_firstListItems[index]) > uniqueIdentifier - 1
-                ? "${int.parse(_firstListItems[index]) - uniqueIdentifier}"
-                : "${int.parse(_firstListItems[index])}",
-            style: TextStyle(fontSize: 20),
+        childWhenDragging: Container(
+          color: Colors.grey,
+          width: 80,
+          height: 80,
+        ),
+        child: Container(
+          color: index.isEven ? evenItemColor : oddItemColor,
+          width: 80,
+          height: 80,
+          child: Center(
+            child: Text(
+              int.parse(_firstListItems[index]) > uniqueIdentifier - 1
+                  ? "${int.parse(_firstListItems[index]) - uniqueIdentifier}"
+                  : "${int.parse(_firstListItems[index])}",
+              style: TextStyle(fontSize: 20),
+            ),
           ),
         ),
       ),
@@ -278,7 +309,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   Widget reOrderList(final List listItems, String keys, _buildListItems,
-      _buildDragTargets, len) {
+      _buildDragTargets, len,scroll) {
     return SizedBox(
       key: Key(keys),
       height: 200,
@@ -289,26 +320,16 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             color: Colors.red,
           ),
           Expanded(
-            child: ReorderableListView(
-              buildDefaultDragHandles: false,
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(vertical: 40),
-              children: <Widget>[
-                SizedBox(
-                  width: listItems.length * 85,
-                  key: Key("$keys"),
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: _buildListItems,
-                    separatorBuilder: _buildDragTargets,
-                    itemCount: len,
-                  ),
-                )
-              ],
-              onReorder: (int oldIndex, int newIndex) {
-                func(oldIndex, newIndex, listItems);
-              },
+            child: SizedBox(
+              width: listItems.length * 85,
+              key: Key("$keys"),
+              child: ListView.separated(
+                controller: scroll,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: _buildListItems,
+                separatorBuilder: _buildDragTargets,
+                itemCount: len,
+              ),
             ),
           ),
         ],
@@ -633,9 +654,3 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     ]);
   }
 }
-// isAlwaysShown: true,
-//                     trackVisibility: true,
-//                     showTrackOnHover: true,
-//                     hoverThickness: 30,
-//                     thickness: 30,
-//                     interactive: true,
