@@ -82,17 +82,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   child: TextField(
                 controller: list1Size,
                 keyboardType: TextInputType.number,
-                onChanged: (a) {
-                  setState(() {
-                    uniqueIdentifier =
-                        int.parse(list1Size!.text) > _secondListItems.length
-                            ? int.parse(list1Size!.text)
-                            : _secondListItems.length;
-
-                    _firstListItems = List<String>.generate(
-                        int.parse(list1Size!.text), (int index) => "$index");
-                  });
-                },
+                onChanged: (a) {},
               ))
             ],
           ),
@@ -103,7 +93,24 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   child: TextField(
                 controller: list2Size,
                 keyboardType: TextInputType.number,
-                onChanged: (y) {
+                onChanged: (y) {},
+              ))
+            ],
+          ),
+          ElevatedButton(
+              onPressed: () {
+                if (list1Size!.text.isNotEmpty) {
+                  setState(() {
+                    uniqueIdentifier =
+                        int.parse(list1Size!.text) > _secondListItems.length
+                            ? int.parse(list1Size!.text)
+                            : _secondListItems.length;
+
+                    _firstListItems = List<String>.generate(
+                        int.parse(list1Size!.text), (int index) => "$index");
+                  });
+                }
+                if (list2Size!.text.isNotEmpty) {
                   setState(() {
                     uniqueIdentifier =
                         _firstListItems.length > int.parse(list2Size!.text)
@@ -113,10 +120,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                         int.parse(list2Size!.text),
                         (int index) => "${index + uniqueIdentifier}");
                   });
-                },
-              ))
-            ],
-          ),
+                }
+                list1Size!.clear();
+                list2Size!.clear();
+              },
+              child: Text("Reset")),
           SizedBox(
             height: 10,
           ),
@@ -554,6 +562,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                         ));
                       }
                     });
+                    newValue.clear();
+                    indexController.clear();
                   }
                 },
                 child: IntrinsicHeight(
@@ -683,6 +693,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                         ));
                       }
                     });
+                    deleteIndex.clear();
                   }
                 },
                 child: IntrinsicHeight(
