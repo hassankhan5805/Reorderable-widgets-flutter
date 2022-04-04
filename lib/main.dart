@@ -33,19 +33,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   bool flagA = false;
   bool flagB = false;
-  List<String> _firstListItems =
-      List<String>.generate(50, (int index) => "$index");
-  late List<String> _secondListItems =
-      List<String>.generate(50, (int index) => "${index}");
+  TextEditingController? list1Size = TextEditingController();
+  TextEditingController? list2Size = TextEditingController();
+  late List<String> _firstListItems = ["0", "1", "2", "3", "4", "5", "6", "7"];
+  late List<String> _secondListItems = ["0", "1", "2", "3", "4", "5", "6", "7"];
   late final List _lists = [_firstListItems, _secondListItems];
-  late int uniqueIdentifier =
-      _secondListItems.length; //must not be less then list size
-  @override
-  void initState() {
-    super.initState();
-    _secondListItems =
-        List<String>.generate(50, (int index) => "${index + uniqueIdentifier}");
-  }
+  late int uniqueIdentifier = _firstListItems.length > _secondListItems.length
+      ? _firstListItems.length
+      : _secondListItems.length;
 
   func(int oldIndex, int newIndex, List listItems) {
     setState(() {
@@ -67,6 +62,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   String? err;
+  final _key1 = GlobalKey();
+  final _key2 = GlobalKey();
+  final _key3 = GlobalKey();
+  late List<GlobalKey> scrollKeys = [_key1, _key2];
   ScrollController scrollController1 = ScrollController();
   ScrollController scrollController2 = ScrollController();
 
@@ -76,6 +75,51 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          Row(
+            children: [
+              Text("Enter List 1 size :"),
+              Expanded(
+                  child: TextField(
+                controller: list1Size,
+                keyboardType: TextInputType.number,
+                onChanged: (a) {
+                  setState(() {
+                    uniqueIdentifier =
+                        int.parse(list1Size!.text) > _secondListItems.length
+                            ? int.parse(list1Size!.text)
+                            : _secondListItems.length;
+
+                    _firstListItems = List<String>.generate(
+                        int.parse(list1Size!.text), (int index) => "$index");
+                  });
+                },
+              ))
+            ],
+          ),
+          Row(
+            children: [
+              Text("Enter List 2 size :"),
+              Expanded(
+                  child: TextField(
+                controller: list2Size,
+                keyboardType: TextInputType.number,
+                onChanged: (y) {
+                  setState(() {
+                    uniqueIdentifier =
+                        _firstListItems.length > int.parse(list2Size!.text)
+                            ? _firstListItems.length
+                            : int.parse(list2Size!.text);
+                    _secondListItems = List<String>.generate(
+                        int.parse(list2Size!.text),
+                        (int index) => "${index + uniqueIdentifier}");
+                  });
+                },
+              ))
+            ],
+          ),
+          SizedBox(
+            height: 10,
+          ),
           SizedBox(
             height: 350,
             child: ReorderableListView(
@@ -93,23 +137,58 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               children: <Widget>[
                 for (int index = 0; index < _lists.length; index += 1)
                   reOrderList(
-                      _lists[index],
-                      "$index",
-                      index == 1 ? _buildListAItems : _buildListBItems,
-                      index == 1 ? _buildDragTargetsA : _buildDragTargetsB,
-                      index == 1
-                          ? _firstListItems.length
-                          : _secondListItems.length,
-                          index == 1 ? scrollController1:scrollController2)
-
+                    _lists[index],
+                    "$index",
+                    index == 0 ? _buildListAItems : _buildListBItems,
+                    index == 0 ? _buildDragTargetsA : _buildDragTargetsB,
+                    index == 0
+                        ? list1Size!.text.isEmpty
+                            ? _firstListItems.length
+                            : int.parse(list1Size!.text)
+                        : _secondListItems.length,
+                    index == 0 ? scrollController1 : scrollController2,
+                    index == 0 ? _key1 : _key2,
+                  )
               ],
             ),
           ),
-          forms(swaped ? _firstListItems : _secondListItems,
-              swaped ? _secondListItems : _firstListItems),
+          SizedBox(
+            key: _key3,
+          ),
+          forms(_firstListItems, _secondListItems),
         ],
       ),
     );
+  }
+
+  listenerPosition(event) {
+    RenderBox? box1 = _key1.currentContext!.findRenderObject() as RenderBox?;
+    Offset listy1 = box1!.localToGlobal(Offset.zero);
+    RenderBox? box2 = _key2.currentContext!.findRenderObject() as RenderBox?;
+    Offset listy2 = box2!.localToGlobal(Offset.zero);
+    RenderBox? box3 = _key3.currentContext!.findRenderObject() as RenderBox?;
+    Offset listy3 = box3!.localToGlobal(Offset.zero);
+    if (event.position.dx > MediaQuery.of(context).size.width - 25 &&
+        event.position.dy > listy1.dy &&
+        event.position.dy < listy2.dy) {
+      scrollController1.animateTo(scrollController1.offset + 200,
+          curve: Curves.ease, duration: const Duration(milliseconds: 400));
+    } else if (event.position.dx < 25 &&
+        event.position.dy > listy1.dy &&
+        event.position.dy < listy2.dy) {
+      scrollController1.animateTo(scrollController1.offset - 200,
+          curve: Curves.ease, duration: const Duration(milliseconds: 400));
+    } else if (event.position.dx > MediaQuery.of(context).size.width - 25 &&
+        event.position.dy > listy2.dy &&
+        event.position.dy < listy3.dy) {
+      scrollController2.animateTo(scrollController2.offset + 200,
+          curve: Curves.ease, duration: const Duration(milliseconds: 400));
+    } else if (event.position.dx < 25 &&
+        event.position.dy > listy2.dy &&
+        event.position.dy < listy3.dy) {
+      scrollController2.animateTo(scrollController2.offset - 200,
+          curve: Curves.ease, duration: const Duration(milliseconds: 400));
+    }
   }
 
   Widget _buildListBItems(BuildContext context, int index) {
@@ -118,11 +197,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
     return Listener(
       onPointerMove: (PointerMoveEvent event) {
-      
-        if (event.position.dx > MediaQuery.of(context).size.width - 100) {
-          scrollController2.animateTo(scrollController2.offset + 200,
-              curve: Curves.ease, duration: const Duration(milliseconds: 400));
-        }
+        listenerPosition(event);
       },
       child: LongPressDraggable<String>(
         data: _secondListItems[index],
@@ -167,11 +242,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     final Color evenItemColor = colorScheme.primary.withOpacity(0.15);
     return Listener(
       onPointerMove: (PointerMoveEvent event) {
-      
-        if (event.position.dx > MediaQuery.of(context).size.width - 100) {
-          scrollController1.animateTo(scrollController1.offset + 200,
-              curve: Curves.ease, duration: const Duration(milliseconds: 400));
-        }
+        listenerPosition(event);
       },
       child: LongPressDraggable<String>(
         data: _firstListItems[index],
@@ -217,7 +288,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       color: Colors.lightBlue[200],
       child: Center(
         child: Text(
-          int.parse(value) > 59
+          int.parse(value) > uniqueIdentifier
               ? "${int.parse(value) - uniqueIdentifier}"
               : "${int.parse(value)}",
           style: TextStyle(fontSize: 20),
@@ -239,13 +310,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onWillAccept: (value) {
         if (_firstListItems.contains(value)) {
           setState(() {
-            print("a to a");
             flagA = false;
           });
         }
         if (_secondListItems.contains(value)) {
           setState(() {
-            print("b to a");
             flagA = true;
           });
         }
@@ -255,10 +324,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onAccept: (value) {
         setState(() {
           if (flagA) {
-            print(1);
             _secondListItems.remove(value);
           } else {
-            print(2);
             _firstListItems.remove(value);
           }
           _firstListItems.insert(index + 1, value);
@@ -280,13 +347,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onWillAccept: (value) {
         if (_firstListItems.contains(value)) {
           setState(() {
-            print("a to b");
             flagB = true;
           });
         }
         if (_secondListItems.contains(value)) {
           setState(() {
-            print("b to b");
             flagB = false;
           });
         }
@@ -296,10 +361,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       onAccept: (value) {
         setState(() {
           if (flagB) {
-            print(3);
             _firstListItems.remove(value);
           } else {
-            print(4);
             _secondListItems.remove(value);
           }
           _secondListItems.insert(index + 1, value);
@@ -309,7 +372,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   Widget reOrderList(final List listItems, String keys, _buildListItems,
-      _buildDragTargets, len,scroll) {
+      _buildDragTargets, len, scroll, GlobalKey scrollKey) {
     return SizedBox(
       key: Key(keys),
       height: 200,
@@ -324,6 +387,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               width: listItems.length * 85,
               key: Key("$keys"),
               child: ListView.separated(
+                key: scrollKey,
                 controller: scroll,
                 scrollDirection: Axis.horizontal,
                 itemBuilder: _buildListItems,
@@ -455,8 +519,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   } else {
                     setState(() {
                       if (dropdownvalue == "List 2") {
-                        print("inseted in list 2");
-
                         if (int.parse(newValue.text) < uniqueIdentifier) {
                           _secondList.insert(
                               int.parse(indexController.text), (newValue.text));
@@ -474,7 +536,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           backgroundColor: Colors.blue,
                         ));
                       } else if (dropdownvalue == "List 1") {
-                        print("inseted in list 1");
                         if (int.parse(newValue.text) < uniqueIdentifier) {
                           _firstList.insert(
                               int.parse(indexController.text), (newValue.text));
@@ -602,7 +663,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   } else {
                     setState(() {
                       if (dropdownvalue2 == "List 2") {
-                        print(int.parse(deleteIndex.text));
                         setState(() {
                           _secondList.removeAt(int.parse(deleteIndex.text));
                         });
@@ -613,7 +673,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           backgroundColor: Colors.blue,
                         ));
                       } else if (dropdownvalue2.contains("List 1")) {
-                        print(int.parse(deleteIndex.text));
                         setState(() {
                           _firstList.removeAt(int.parse(deleteIndex.text));
                         });
